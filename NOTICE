@@ -1,0 +1,26 @@
+connect2m
+Copyright © 2026 Abdallah Zreik
+
+connect2m is a modified version of RustDesk (https://github.com/rustdesk/rustdesk),
+version 1.5.0.
+RustDesk is Copyright © Purslane Tech Pte. Ltd. and the RustDesk contributors.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, version 3 of the License. See the LICENCE file for the
+full text. This program is distributed WITHOUT ANY WARRANTY.
+
+Copyright in the original RustDesk code remains with its authors. Abdallah
+Zreik holds copyright in the modifications made for connect2m, including:
+  - the connect2m name, logo and icon artwork (res/, flutter/assets/, platform
+    icon files)
+  - the simple support view (flutter/lib/desktop/widgets/connect2m_simple_home.dart)
+  - the rebranding changes, About page, installer license text and the
+    Windows build workflow (.github/workflows/connect2m-windows.yml)
+The full list of changes is the git history of this repository, starting from
+the commit that imports unmodified RustDesk 1.5.0.
+
+Trademarks: under section 7(e) of the AGPL, no rights are granted to use the
+connect2m name, logo or icon to identify modified versions. "RustDesk" is a
+trademark of its owner and is used only to describe where this software
+comes from.

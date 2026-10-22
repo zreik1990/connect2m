@@ -498,7 +498,8 @@ def init_global_vars(dist_dir, app_name, args):
 
 
 def update_license_file(app_name):
-    if app_name == "RustDesk":
+    # connect2m ships its own License.rtf with the correct attribution; never rewrite it.
+    if app_name in ("RustDesk", "connect2m"):
         return
     license_file = Path(sys.argv[0]).parent.joinpath("Package/License.rtf")
     with open(license_file, "r", encoding="utf-8") as f:

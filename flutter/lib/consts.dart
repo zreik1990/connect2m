@@ -4,6 +4,13 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 
+// connect2m branding. Copyright © 2026 Abdallah Zreik.
+const String kConnect2mSourceUrl = '__CONNECT2M_SOURCE_URL__';
+const String kConnect2mCopyright =
+    'connect2m Copyright © 2026 Abdallah Zreik';
+const String kConnect2mUpstreamNotice =
+    'Based on RustDesk, Copyright © Purslane Tech Pte. Ltd. and contributors. Licensed under AGPL-3.0.';
+
 const int kMaxVirtualDisplayCount = 4;
 const int kAllVirtualDisplay = -1;
 
