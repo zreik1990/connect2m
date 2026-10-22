@@ -12,6 +12,11 @@ name: Build connect2m for Windows
 
 on:
   workflow_dispatch:
+    inputs:
+      publish-release:
+        description: "Publish a GitHub Release (tag v<VERSION>) with the installers"
+        type: boolean
+        default: false
   push:
     tags:
       - "v*"
@@ -295,11 +300,23 @@ jobs:
           path: ./Output/*
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || inputs.publish-release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: connect2m ${{ github.ref_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', env.VERSION) }}
+          target_commitish: ${{ github.sha }}
+          name: connect2m ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', env.VERSION) }}
+          body: |
+            connect2m remote support for Windows (64-bit, Windows 10 or newer).
+
+            **Which file do I need?**
+            - `connect2m-Setup-${{ env.VERSION }}.exe`: the installer. Use this one.
+            - `connect2m-${{ env.VERSION }}-x86_64.exe`: portable, runs without installing.
+            - `connect2m-${{ env.VERSION }}-x86_64.msi`: for IT deployment tools.
+
+            The files are not code-signed yet, so Windows SmartScreen may show "Windows protected your PC". Click **More info → Run anyway**.
+
+            connect2m Copyright © 2026 Abdallah Zreik. Based on RustDesk (AGPL-3.0); source code is this repository.
           files: |
             ./Output/*.exe
             ./Output/*.msi
