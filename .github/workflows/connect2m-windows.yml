@@ -2,7 +2,8 @@
 # Copyright © 2026 Abdallah Zreik. Derived from RustDesk's flutter-build.yml (AGPL-3.0).
 #
 # Produces, for Windows x64:
-#   connect2m-<version>-x86_64.exe  portable app / installer (one file)
+#   connect2m-Setup-<version>.exe   NSIS installer (standalone, recommended)
+#   connect2m-<version>-x86_64.exe  portable app that can also install itself
 #   connect2m-<version>-x86_64.msi  MSI installer for managed deployments
 #
 # Run it from the Actions tab ("Run workflow"), or push a tag like v1.5.0 to
@@ -189,7 +190,7 @@ jobs:
         shell: bash
         run: |
           url="${{ github.server_url }}/${{ github.repository }}"
-          sed -i "s#__CONNECT2M_SOURCE_URL__#${url}#g" flutter/lib/consts.dart res/msi/Package/License.rtf
+          sed -i "s#__CONNECT2M_SOURCE_URL__#${url}#g" flutter/lib/consts.dart res/msi/Package/License.rtf res/nsis/connect2m.nsi
           grep -n "kConnect2mSourceUrl =" flutter/lib/consts.dart
 
       - name: Build connect2m
@@ -258,6 +259,18 @@ jobs:
           popd
           mkdir -p ./Output
           mv ./target/release/rustdesk-portable-packer.exe ./Output/${{ env.APP_NAME }}-${{ env.VERSION }}-x86_64.exe
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: |
+          $makensis = (Get-Command makensis -ErrorAction SilentlyContinue).Source
+          if (-not $makensis) { $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe" }
+          if (-not (Test-Path $makensis)) {
+            choco install nsis -y --no-progress
+            $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          }
+          & $makensis /V3 /WX "/DAPP_VERSION=${{ env.VERSION }}" "/DDIST_DIR=..\..\dist" "/DOUT_FILE=..\..\Output\${{ env.APP_NAME }}-Setup-${{ env.VERSION }}.exe" res\nsis\connect2m.nsi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2

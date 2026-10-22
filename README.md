@@ -33,8 +33,34 @@ The Windows app is built on GitHub's Windows machines with
 1. Open the repository's **Actions** tab and choose **Build connect2m for Windows**.
 2. Click **Run workflow**. A build takes roughly 40–60 minutes the first time.
 3. Download the **connect2m-windows-x64** artifact. It contains:
+   - `connect2m-Setup-1.5.0.exe`: **the installer to give people.** A standalone
+     NSIS 3 installer in the electron-builder style (English and Arabic)
    - `connect2m-1.5.0-x86_64.exe`: one file that runs portably and can install itself
    - `connect2m-1.5.0-x86_64.msi`: MSI installer for managed deployments
+
+### NSIS installer
+
+Source: [`res/nsis/connect2m.nsi`](res/nsis/connect2m.nsi). It installs for all
+users into `C:\Program Files\connect2m`, sets up the connect2m background
+service, firewall rules and `connect2m://` links (via the app's own
+`--after-install` hook, as the MSI does), adds Start menu and desktop
+shortcuts, and registers an uninstaller in **Settings → Apps**. Uninstalling
+keeps the user's settings and device ID in `%AppData%\connect2m`.
+
+Command-line switches:
+
+| Switch | Effect |
+|---|---|
+| `/S` | Silent install |
+| `/D=C:\path` | Install folder (must be last) |
+| `/NODESKTOP` | No desktop shortcut |
+| `/RUN` | Start connect2m after a silent install |
+
+Silent uninstall: `"C:\Program Files\connect2m\Uninstall connect2m.exe" /S`.
+
+To build it yourself on Windows with [NSIS 3](https://nsis.sourceforge.io/)
+installed, put the built app in `dist\` and run
+`makensis /DDIST_DIR=..\..\dist res\nsis\connect2m.nsi`.
 
 Pushing a tag such as `v1.5.0` also publishes a GitHub Release with both files.
 
