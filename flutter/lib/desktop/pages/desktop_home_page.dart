@@ -294,8 +294,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   buildPasswordBoard2(BuildContext context, ServerModel model) {
-    if (bind.isIncomingOnly() && bind.connect2mHasFixedPassword())
-      return connect2mClientPasswordBoard(context);
+    if (bind.isIncomingOnly()) return connect2mClientPasswordBoard(context);
     RxBool refreshHover = false.obs;
     RxBool editHover = false.obs;
     final textColor = Theme.of(context).textTheme.titleLarge?.color;

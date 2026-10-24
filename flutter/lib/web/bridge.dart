@@ -1668,10 +1668,6 @@ class RustdeskImpl {
     return false;
   }
 
-  bool connect2mHasFixedPassword({dynamic hint}) {
-    return false;
-  }
-
   bool isOutgoingOnly({dynamic hint}) {
     return false;
   }

@@ -2516,10 +2516,6 @@ pub fn is_custom_client() -> SyncReturn<bool> {
     SyncReturn(crate::common::is_custom_client())
 }
 
-pub fn connect2m_has_fixed_password() -> SyncReturn<bool> {
-    SyncReturn(crate::connect2m::has_fixed_password())
-}
-
 pub fn is_disable_settings() -> SyncReturn<bool> {
     SyncReturn(config::is_disable_settings())
 }
