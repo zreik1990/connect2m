@@ -1,22 +1,37 @@
 # connect2m Windows build.
 # Copyright © 2026 Abdallah Zreik. Derived from RustDesk's flutter-build.yml (AGPL-3.0).
 #
-# Produces, for Windows x64:
-#   connect2m-Setup-<version>.exe   NSIS installer (standalone, recommended)
-#   connect2m-<version>-x86_64.exe  portable app that can also install itself
-#   connect2m-<version>-x86_64.msi  MSI installer for managed deployments
+# Produces:
+#   connect2m-Setup-<version>.exe     Technician app, NSIS installer (also as connect2m-Setup.exe)
+#   connect2m-Client-<version>.msi    Client app, MSI for silent deployment (also as connect2m-Client.msi)
+#   connect2m-<version>-x86_64.exe    Technician app, portable
+#   connect2m-server-windows.zip      Server: ID/relay, sign-in + client list API, download page
 #
-# Run it from the Actions tab ("Run workflow"), or push a tag like v1.5.0 to
-# also publish a GitHub Release with the files attached.
+# Run it from the Actions tab ("Run workflow"). Enter your server's address and
+# key (printed by Install-Connect2mServer.ps1) so both apps use only that server.
+# The client password comes from the repository secret CONNECT2M_CLIENT_PASSWORD
+# (Settings > Secrets and variables > Actions); without it, the default applies.
 name: Build connect2m for Windows
 
 on:
   workflow_dispatch:
     inputs:
+      server:
+        description: "Server address (LAN IP or DNS name) the apps connect to"
+        type: string
+        default: "connect2m-server"
+      key:
+        description: "Server key (from connect2m-server-info.txt); empty = not checked"
+        type: string
+        default: ""
+      api:
+        description: "Sign-in address; empty = http://<server>:21114 (use https://<domain> for Microsoft/Google sign-in)"
+        type: string
+        default: ""
       publish-release:
-        description: "Publish a GitHub Release (tag v<VERSION>) with the installers"
+        description: "Publish a GitHub Release (tag v<VERSION>) with the files"
         type: boolean
-        default: false
+        default: true
   push:
     tags:
       - "v*"
@@ -27,7 +42,7 @@ permissions:
 env:
   APP_NAME: "connect2m"
   APP_MANUFACTURER: "Abdallah Zreik"
-  VERSION: "1.5.0"
+  VERSION: "1.5.1"
   RUST_VERSION: "1.75"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.24.5"
@@ -36,6 +51,14 @@ env:
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
+  # Server components (see server/windows/README.md)
+  SERVER_REPO: "lejianwen/rustdesk-server"
+  SERVER_COMMIT: "fb8b5b9cf494d045f0feb370d83913b1a7506388"
+  API_REPO: "lejianwen/rustdesk-api"
+  API_TAG: "v2.7"
+  C2M_SERVER: ${{ inputs.server || 'connect2m-server' }}
+  C2M_KEY: ${{ inputs.key || '' }}
+  C2M_API: ${{ inputs.api || '' }}
 
 jobs:
   generate-bridge:
@@ -93,6 +116,19 @@ jobs:
             ./flutter/macos/Runner/bridge_generated.h
             ./flutter/ios/Runner/bridge_generated.h
 
+      # Catches Dart mistakes in minutes instead of after the long Windows build.
+      - name: Check connect2m Dart code
+        working-directory: flutter
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings \
+            lib/consts.dart \
+            lib/desktop/widgets/connect2m_home_parts.dart \
+            lib/desktop/pages/desktop_home_page.dart \
+            lib/desktop/pages/desktop_setting_page.dart \
+            lib/desktop/pages/connection_page.dart \
+            lib/desktop/widgets/remote_toolbar.dart \
+            lib/common/widgets/peer_card.dart
+
   build-topmost-window:
     # Helper DLL used by privacy mode (blank the remote screen).
     runs-on: windows-2022
@@ -112,6 +148,39 @@ jobs:
         with:
           name: topmostwindow-artifacts-x64
           path: ./RustDeskTempTopMostWindow/WindowInjection/x64/Release/WindowInjection.dll
+
+  build-server-tools:
+    # ID server (hbbs) and relay (hbbr) for the Windows server bundle.
+    runs-on: windows-2022
+    steps:
+      - name: Checkout server source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: ${{ env.SERVER_REPO }}
+          ref: ${{ env.SERVER_COMMIT }}
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          prefix-key: server-windows-2022
+
+      - name: Build hbbs and hbbr
+        run: cargo build --release --bin hbbs --bin hbbr
+
+      - name: Upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: server-tools-x64
+          path: |
+            target/release/hbbs.exe
+            target/release/hbbr.exe
+            LICENSE
 
   build-windows:
     needs: [generate-bridge, build-topmost-window]
@@ -191,12 +260,26 @@ jobs:
             exit 1
           fi
 
-      - name: Point About page and license at this repository's source
+      - name: Point About page and terms at this repository's source
         shell: bash
         run: |
           url="${{ github.server_url }}/${{ github.repository }}"
-          sed -i "s#__CONNECT2M_SOURCE_URL__#${url}#g" flutter/lib/consts.dart res/msi/Package/License.rtf res/nsis/connect2m.nsi
+          sed -i "s#__CONNECT2M_SOURCE_URL__#${url}#g" flutter/lib/consts.dart res/msi/Package/License.rtf res/nsis/connect2m.nsi res/nsis/license.txt
           grep -n "kConnect2mSourceUrl =" flutter/lib/consts.dart
+
+      - name: Set the client password
+        shell: bash
+        env:
+          C2M_PASSWORD: ${{ secrets.CONNECT2M_CLIENT_PASSWORD }}
+        run: |
+          if [ -n "$C2M_PASSWORD" ]; then
+            storage=$(python3 -c "import hashlib,base64,os; print('00'+base64.b64encode(hashlib.sha256((os.environ['C2M_PASSWORD']+'connect2m-client').encode()).digest()).decode())")
+            echo "::add-mask::$storage"
+            echo "CONNECT2M_CLIENT_PASSWORD_STORAGE=$storage" >> "$GITHUB_ENV"
+            echo "Client password: from the CONNECT2M_CLIENT_PASSWORD secret."
+          else
+            echo "Client password: built-in default."
+          fi
 
       - name: Build connect2m
         run: |
@@ -248,13 +331,31 @@ jobs:
           name: topmostwindow-artifacts-x64
           path: "./dist"
 
+      - name: Write edition settings (technician and client)
+        shell: bash
+        run: |
+          write_ini() {
+            {
+              echo "[connect2m]"
+              echo "edition=$2"
+              echo "server=$C2M_SERVER"
+              echo "key=$C2M_KEY"
+              if [ -n "$C2M_API" ]; then echo "api=$C2M_API"; fi
+            } > "$1/connect2m.ini"
+          }
+          cp -r dist dist-client
+          write_ini dist technician
+          write_ini dist-client client
+          echo "--- technician"; cat dist/connect2m.ini
+          echo "--- client"; cat dist-client/connect2m.ini
+
       - name: Upload unpacked app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: connect2m-windows-x64-unpacked
           path: dist
 
-      - name: Build single-file executable
+      - name: Build single-file executable (technician, portable)
         shell: bash
         run: |
           sed -i '/dpiAware/d' res/manifest.xml
@@ -265,7 +366,7 @@ jobs:
           mkdir -p ./Output
           mv ./target/release/rustdesk-portable-packer.exe ./Output/${{ env.APP_NAME }}-${{ env.VERSION }}-x86_64.exe
 
-      - name: Build NSIS installer
+      - name: Build NSIS installer (technician)
         shell: pwsh
         run: |
           $makensis = (Get-Command makensis -ErrorAction SilentlyContinue).Source
@@ -282,22 +383,83 @@ jobs:
         with:
           msbuild-architecture: x86
 
-      - name: Build msi
+      - name: Build MSI (client)
         run: |
           pushd ./res/msi
-          python preprocess.py --arp -d ../../dist --app-name "${{ env.APP_NAME }}" -m "${{ env.APP_MANUFACTURER }}"
+          python preprocess.py --arp -d ../../dist-client --app-name "${{ env.APP_NAME }}" -m "${{ env.APP_MANUFACTURER }}"
           nuget restore msi.sln
           msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
           $msi = Get-ChildItem ./Package/bin/*/Release/en-us/Package.msi | Select-Object -First 1
-          mv $msi.FullName ../../Output/${{ env.APP_NAME }}-${{ env.VERSION }}-x86_64.msi
+          mv $msi.FullName ../../Output/${{ env.APP_NAME }}-Client-${{ env.VERSION }}.msi
           popd
-          Get-FileHash ./Output/* -Algorithm SHA256 | Format-List
+
+      - name: Stable download names
+        shell: bash
+        run: |
+          cp Output/${{ env.APP_NAME }}-Setup-${{ env.VERSION }}.exe Output/${{ env.APP_NAME }}-Setup.exe
+          cp Output/${{ env.APP_NAME }}-Client-${{ env.VERSION }}.msi Output/${{ env.APP_NAME }}-Client.msi
+          sha256sum Output/*
 
       - name: Upload installers
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: connect2m-windows-x64
           path: ./Output/*
+
+  package-server-and-publish:
+    needs: [build-windows, build-server-tools]
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Download installers
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: connect2m-windows-x64
+          path: ./Output
+
+      - name: Download server tools
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: server-tools-x64
+          path: ./server-tools
+
+      - name: Assemble server bundle
+        run: |
+          set -e
+          B=bundle/connect2m-server
+          mkdir -p $B/bin $B/api $B/www $B/licenses
+          cp server/windows/*.ps1 server/windows/README.md $B/
+          sed -i "s#__CONNECT2M_REPOSITORY__#${{ github.repository }}#g" $B/Update-Connect2mDownloads.ps1
+          cp server/windows/www/* $B/www/
+          cp Output/${{ env.APP_NAME }}-Setup.exe Output/${{ env.APP_NAME }}-Client.msi $B/www/
+          find server-tools -name 'hbbs.exe' -exec cp {} $B/bin/ \;
+          find server-tools -name 'hbbr.exe' -exec cp {} $B/bin/ \;
+          cp server-tools/LICENSE $B/licenses/rustdesk-server-AGPL-3.0.txt
+
+          gh release download "${{ env.API_TAG }}" -R "${{ env.API_REPO }}" -p 'windows-amd64.zip' -D dl
+          unzip -q dl/windows-amd64.zip -d dl/api
+          cp -r dl/api/release/. $B/api/
+          curl -fsSL "https://raw.githubusercontent.com/${{ env.API_REPO }}/${{ env.API_TAG }}/LICENSE" -o $B/licenses/rustdesk-api-MIT.txt
+
+          gh release download -R caddyserver/caddy -p 'caddy_*_windows_amd64.zip' -D dl
+          unzip -q dl/caddy_*_windows_amd64.zip -d dl/caddy
+          cp dl/caddy/caddy.exe $B/bin/
+          cp dl/caddy/LICENSE $B/licenses/caddy-Apache-2.0.txt
+          cp LICENCE $B/licenses/connect2m-AGPL-3.0.txt
+
+          test -f $B/bin/hbbs.exe && test -f $B/bin/hbbr.exe && test -f $B/api/apimain.exe && test -f $B/bin/caddy.exe
+          (cd bundle && zip -qr ../Output/connect2m-server-windows.zip connect2m-server)
+          ls -la Output
+
+      - name: Upload server bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: connect2m-server-windows
+          path: ./Output/connect2m-server-windows.zip
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/') || inputs.publish-release
@@ -307,16 +469,18 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: connect2m ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', env.VERSION) }}
           body: |
-            connect2m remote support for Windows (64-bit, Windows 10 or newer).
+            connect2m remote support for Windows (64-bit, Windows 10 or newer). Built for server: `${{ env.C2M_SERVER }}`.
 
             **Which file do I need?**
-            - `connect2m-Setup-${{ env.VERSION }}.exe`: the installer. Use this one.
-            - `connect2m-${{ env.VERSION }}-x86_64.exe`: portable, runs without installing.
-            - `connect2m-${{ env.VERSION }}-x86_64.msi`: for IT deployment tools.
+            - `connect2m-Setup.exe`: **Technician** app installer (same as `connect2m-Setup-${{ env.VERSION }}.exe`).
+            - `connect2m-Client.msi`: **Client** app for the PCs you support; deploy silently with `msiexec /i connect2m-Client.msi /qn`.
+            - `connect2m-${{ env.VERSION }}-x86_64.exe`: Technician app, portable (no install).
+            - `connect2m-server-windows.zip`: the server (ID, relay, sign-in, shared client list, download page). See README.md inside.
 
             The files are not code-signed yet, so Windows SmartScreen may show "Windows protected your PC". Click **More info → Run anyway**.
 
-            connect2m Copyright © 2026 Abdallah Zreik. Based on RustDesk (AGPL-3.0); source code is this repository.
+            connect2m Copyright © 2026 Abdallah Zreik. Licensed under the GNU AGPL-3.0; based on RustDesk. Source code: this repository.
           files: |
             ./Output/*.exe
             ./Output/*.msi
+            ./Output/*.zip

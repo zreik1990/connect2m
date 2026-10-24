@@ -4025,6 +4025,11 @@ impl Connection {
                         }
                     }
                 }
+                Some(message::Union::VoiceCallRequest(request))
+                    if request.is_connect && crate::connect2m::is_voice_call_disabled() =>
+                {
+                    log::info!("connect2m: voice call request refused");
+                }
                 Some(message::Union::VoiceCallRequest(request)) => {
                     if request.is_connect {
                         self.voice_call_request_timestamp = Some(

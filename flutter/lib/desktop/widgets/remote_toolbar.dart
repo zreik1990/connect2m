@@ -846,10 +846,10 @@ class _RemoteToolbarState extends State<RemoteToolbar> {
       toolbarItems.add(_KeyboardMenu(id: widget.id, ffi: widget.ffi));
     }
     toolbarItems.add(_ChatMenu(id: widget.id, ffi: widget.ffi));
-    if (!isWeb) {
+    if (!isWeb && !kConnect2mLean) {
       toolbarItems.add(_VoiceCallMenu(id: widget.id, ffi: widget.ffi));
     }
-    if (!isWeb) toolbarItems.add(_RecordMenu());
+    if (!isWeb && !kConnect2mLean) toolbarItems.add(_RecordMenu());
     toolbarItems.add(_CloseMenu(id: widget.id, ffi: widget.ffi));
     final toolbarBorderRadius = BorderRadius.all(Radius.circular(4.0));
     // innerAxis: how the toolbar icons themselves flow.
@@ -2818,7 +2818,8 @@ class _ChatMenuState extends State<_ChatMenu> {
           ffi: widget.ffi,
           color: _ToolbarTheme.blueColor,
           hoverColor: _ToolbarTheme.hoverBlueColor,
-          menuChildrenGetter: (_) => [textChat(), voiceCall()]);
+          menuChildrenGetter: (_) =>
+              [textChat(), if (!kConnect2mLean) voiceCall()]);
     }
   }
 

@@ -37,7 +37,7 @@ SetCompressorDictSize 64
 !define APP_NAME "connect2m"
 !define APP_EXE "connect2m.exe"
 !define PUBLISHER "Abdallah Zreik"
-!define COPYRIGHT "Copyright (c) 2026 Abdallah Zreik. Based on RustDesk (AGPL-3.0)."
+!define COPYRIGHT "Copyright (c) 2026 Abdallah Zreik. Licensed under the GNU AGPL-3.0."
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 !define INSTALLER_KEY "Software\${APP_NAME}\Installer"
 
@@ -67,12 +67,13 @@ VIAddVersionKey /LANG=0 "ProductVersion" "${APP_VERSION}"
 ; ---- Look and feel -------------------------------------------------------
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "sidebar.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "sidebar.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "art\side_100.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "art\side_100.bmp"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_HEADERIMAGE_BITMAP "header.bmp"
-!define MUI_HEADERIMAGE_UNBITMAP "header.bmp"
+!define MUI_HEADERIMAGE_BITMAP "art\header_100.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP "art\header_100.bmp"
+!define MUI_CUSTOMFUNCTION_GUIINIT C2M_GuiInit
 !define MUI_ABORTWARNING
 !define MUI_LANGDLL_ALLLANGUAGES
 !define MUI_LANGDLL_REGISTRY_ROOT HKLM
@@ -80,6 +81,8 @@ VIAddVersionKey /LANG=0 "ProductVersion" "${APP_VERSION}"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Language"
 
 ; ---- Installer pages -----------------------------------------------------
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW C2M_WelcomeShow
+!define MUI_PAGE_CUSTOMFUNCTION_DESTROYED C2M_SidebarDestroyed
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "$(MUILicense)"
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryLeave
@@ -88,6 +91,8 @@ VIAddVersionKey /LANG=0 "ProductVersion" "${APP_VERSION}"
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION LaunchApp
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW C2M_FinishShow
+!define MUI_PAGE_CUSTOMFUNCTION_DESTROYED C2M_SidebarDestroyed
 !insertmacro MUI_PAGE_FINISH
 
 ; ---- Uninstaller pages ---------------------------------------------------
@@ -98,6 +103,8 @@ VIAddVersionKey /LANG=0 "ProductVersion" "${APP_VERSION}"
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "Arabic"
 !insertmacro MUI_RESERVEFILE_LANGDLL
+
+!include "connect2m-art.nsh"
 
 LicenseLangString MUILicense ${LANG_ENGLISH} "license.txt"
 LicenseLangString MUILicense ${LANG_ARABIC} "license.txt"
@@ -253,6 +260,7 @@ Function .onInit
     SectionSetFlags ${SEC_DESKTOP} 0
   ${EndIf}
 
+  Call C2M_ExtractArt
   !insertmacro MUI_LANGDLL_DISPLAY
 FunctionEnd
 

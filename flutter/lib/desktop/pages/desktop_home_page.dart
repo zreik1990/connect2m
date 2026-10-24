@@ -12,7 +12,7 @@ import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/desktop/pages/connection_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_setting_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_tab_page.dart';
-import 'package:flutter_hbb/desktop/widgets/connect2m_simple_home.dart';
+import 'package:flutter_hbb/desktop/widgets/connect2m_home_parts.dart';
 import 'package:flutter_hbb/desktop/widgets/update_progress.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/server_model.dart';
@@ -53,7 +53,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   final RxBool _editHover = false.obs;
   final RxBool _block = false.obs;
-  final RxBool _simpleMode = connect2mSimpleModeEnabled().obs;
 
   final GlobalKey _childKey = GlobalKey();
 
@@ -61,34 +60,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   Widget build(BuildContext context) {
     super.build(context);
     final isIncomingOnly = bind.isIncomingOnly();
-    if (!isIncomingOnly && !bind.isOutgoingOnly()) {
-      return _buildBlock(
-          child: Obx(() => _simpleMode.value
-              ? Connect2mSimpleHome(
-                  onShowFullView: () => _setSimpleMode(false),
-                  helpCards: Obx(
-                      () => buildHelpCards(stateGlobal.updateUrl.value)))
-              : _buildFullHome(context)));
-    }
-    return _buildFullHome(context, block: true);
-  }
-
-  void _setSimpleMode(bool enabled) {
-    _simpleMode.value = enabled;
-    setConnect2mSimpleMode(enabled);
-  }
-
-  Widget _buildFullHome(BuildContext context, {bool block = false}) {
-    final isIncomingOnly = bind.isIncomingOnly();
-    final row = Row(
+    return _buildBlock(
+        child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildLeftPane(context),
         if (!isIncomingOnly) const VerticalDivider(width: 1),
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
-    );
-    return block ? _buildBlock(child: row) : row;
+    ));
   }
 
   Widget _buildBlock({required Widget child}) {
@@ -113,15 +93,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
-      if (!isIncomingOnly && !isOutgoingOnly)
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: () => _setSimpleMode(true),
-            icon: const Icon(Icons.support_agent, size: 18),
-            label: const Text('Simple view'),
-          ),
-        ).marginOnly(left: 12),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -250,7 +221,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                                   ?.color
                                   ?.withOpacity(0.5)),
                         ).marginOnly(top: 5),
-                        buildPopupMenu(context)
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                          if (!bind.isIncomingOnly())
+                            connect2mChangeIdButton(context),
+                          buildPopupMenu(context)
+                        ])
                       ],
                     ),
                   ),
@@ -319,6 +294,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   buildPasswordBoard2(BuildContext context, ServerModel model) {
+    if (bind.isIncomingOnly()) return connect2mClientPasswordBoard(context);
     RxBool refreshHover = false.obs;
     RxBool editHover = false.obs;
     final textColor = Theme.of(context).textTheme.titleLarge?.color;

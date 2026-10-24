@@ -562,18 +562,20 @@ class _ConnectionPageState extends State<ConnectionPage>
                                       'Transfer file',
                                       () => onConnect(isFileTransfer: true)
                                     ),
-                                    (
-                                      'View camera',
-                                      () => onConnect(isViewCamera: true)
-                                    ),
-                                    (
-                                      '${translate('Terminal')} (beta)',
-                                      () => onConnect(isTerminal: true)
-                                    ),
+                                    if (!kConnect2mLean)
+                                      (
+                                        'View camera',
+                                        () => onConnect(isViewCamera: true)
+                                      ),
+                                    if (!kConnect2mLean)
+                                      (
+                                        '${translate('Terminal')} (beta)',
+                                        () => onConnect(isTerminal: true)
+                                      ),
                                     // `connect` routes this through the
                                     // desktop path only; the peer card gates
                                     // it the same way.
-                                    if (isDesktop)
+                                    if (isDesktop && !kConnect2mLean)
                                       (
                                         'TCP tunneling',
                                         () => onConnect(isTcpTunneling: true)

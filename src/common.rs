@@ -2358,6 +2358,7 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 }
 
 pub fn load_custom_client() {
+    crate::connect2m::load_edition();
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
@@ -2379,7 +2380,7 @@ pub fn load_custom_client() {
     }
 }
 
-fn read_custom_client_advanced_settings(
+pub(crate) fn read_custom_client_advanced_settings(
     settings: serde_json::Value,
     map_display_settings: &HashMap<String, &&str>,
     map_local_settings: &HashMap<String, &&str>,

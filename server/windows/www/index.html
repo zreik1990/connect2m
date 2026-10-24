@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>connect2m Downloads</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<!-- connect2m download page. Copyright (c) 2026 Abdallah Zreik. AGPL-3.0. -->
+<style>
+  :root {
+    --bg: #F4F7FB; --card: #FFFFFF; --text: #0B2545; --muted: #5B6B82;
+    --line: #E1E8F2; --blue: #1463F3; --teal: #14B8A6; --code: #EEF3FA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0B1220; --card: #131C2E; --text: #E8EEF8; --muted: #9AA8BD;
+            --line: #23304A; --code: #0F1828; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  .hero { background: linear-gradient(120deg, #0A2FB8, #1463F3 50%, #12B3A2);
+          color: #fff; padding: 40px 16px 72px; text-align: center; }
+  .hero img { height: 54px; filter: brightness(0) invert(1); }
+  .hero p { margin: 12px auto 0; max-width: 560px; opacity: .9; }
+  main { max-width: 920px; margin: -44px auto 40px; padding: 0 16px;
+         display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+          padding: 22px; box-shadow: 0 8px 24px rgba(11, 37, 69, .08); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em;
+         text-transform: uppercase; color: var(--blue); }
+  h2 { margin: 6px 0 6px; font-size: 20px; }
+  .muted { color: var(--muted); }
+  ul { padding-left: 18px; margin: 10px 0 16px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+         background: var(--blue); color: #fff; font-weight: 600; padding: 11px 18px;
+         border-radius: 10px; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn.teal { background: var(--teal); }
+  code, pre { font-family: Consolas, "Cascadia Mono", monospace; font-size: 13px; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px;
+        padding: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .wide { grid-column: 1 / -1; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 32px; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <img src="logo.svg" alt="connect2m">
+  <p>Remote support on our own network: control a PC, send and receive files,
+     and keep every client in one shared list.</p>
+</header>
+<main>
+  <section class="card">
+    <span class="tag">For technicians</span>
+    <h2>connect2m Technician</h2>
+    <p class="muted">Install on your own PC to support others.</p>
+    <ul>
+      <li>Remote control, including installing apps</li>
+      <li>Send and receive files</li>
+      <li>Shared client list: rename, favourite and organise</li>
+      <li>Sign in with Microsoft 365 or Google</li>
+    </ul>
+    <a class="btn" href="connect2m-Setup.exe" download>Download for Windows</a>
+  </section>
+  <section class="card">
+    <span class="tag">For client PCs</span>
+    <h2>connect2m Client</h2>
+    <p class="muted">For the PCs you support. Shows only the PC's ID; the
+       password is set by IT and cannot be changed on the PC.</p>
+    <ul>
+      <li>MSI package for remote / silent deployment</li>
+      <li>No microphone or camera access</li>
+      <li>Works only on this network</li>
+    </ul>
+    <a class="btn teal" href="connect2m-Client.msi" download>Download MSI</a>
+  </section>
+  <section class="card wide">
+    <span class="tag">IT deployment</span>
+    <h2>Install the client silently</h2>
+    <p class="muted">From an elevated command prompt, Intune, Group Policy or any deployment tool:</p>
+    <pre>msiexec /i connect2m-Client.msi /qn</pre>
+    <p class="muted">Technician installer, silent: <code>connect2m-Setup.exe /S</code></p>
+  </section>
+</main>
+<footer>connect2m &copy; 2026 Abdallah Zreik</footer>
+</body>
+</html>

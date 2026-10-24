@@ -969,11 +969,11 @@ class RecentPeerCard extends BasePeerCard {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
       _transferFileAction(context),
-      _viewCameraAction(context),
-      _terminalAction(context),
+      if (!kConnect2mLean) _viewCameraAction(context),
+      if (!kConnect2mLean) _terminalAction(context),
     ];
 
-    if (peer.platform == kPeerPlatformWindows) {
+    if (!kConnect2mLean && peer.platform == kPeerPlatformWindows) {
       menuItems.add(_terminalRunAsAdminAction(context));
     }
 
@@ -1034,11 +1034,11 @@ class FavoritePeerCard extends BasePeerCard {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
       _transferFileAction(context),
-      _viewCameraAction(context),
-      _terminalAction(context),
+      if (!kConnect2mLean) _viewCameraAction(context),
+      if (!kConnect2mLean) _terminalAction(context),
     ];
 
-    if (peer.platform == kPeerPlatformWindows) {
+    if (!kConnect2mLean && peer.platform == kPeerPlatformWindows) {
       menuItems.add(_terminalRunAsAdminAction(context));
     }
 
@@ -1094,11 +1094,11 @@ class DiscoveredPeerCard extends BasePeerCard {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
       _transferFileAction(context),
-      _viewCameraAction(context),
-      _terminalAction(context),
+      if (!kConnect2mLean) _viewCameraAction(context),
+      if (!kConnect2mLean) _terminalAction(context),
     ];
 
-    if (peer.platform == kPeerPlatformWindows) {
+    if (!kConnect2mLean && peer.platform == kPeerPlatformWindows) {
       menuItems.add(_terminalRunAsAdminAction(context));
     }
 
@@ -1153,11 +1153,11 @@ class AddressBookPeerCard extends BasePeerCard {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
       _transferFileAction(context),
-      _viewCameraAction(context),
-      _terminalAction(context),
+      if (!kConnect2mLean) _viewCameraAction(context),
+      if (!kConnect2mLean) _terminalAction(context),
     ];
 
-    if (peer.platform == kPeerPlatformWindows) {
+    if (!kConnect2mLean && peer.platform == kPeerPlatformWindows) {
       menuItems.add(_terminalRunAsAdminAction(context));
     }
 
@@ -1310,11 +1310,11 @@ class MyGroupPeerCard extends BasePeerCard {
     final List<MenuEntryBase<String>> menuItems = [
       _connectAction(context),
       _transferFileAction(context),
-      _viewCameraAction(context),
-      _terminalAction(context),
+      if (!kConnect2mLean) _viewCameraAction(context),
+      if (!kConnect2mLean) _terminalAction(context),
     ];
 
-    if (peer.platform == kPeerPlatformWindows) {
+    if (!kConnect2mLean && peer.platform == kPeerPlatformWindows) {
       menuItems.add(_terminalRunAsAdminAction(context));
     }
 

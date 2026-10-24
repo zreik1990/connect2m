@@ -24,6 +24,8 @@
 
 		<!-- User Interface -->
 		<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+		<WixVariable Id="WixUIDialogBmp" Value="connect2m-dialog.bmp" />
+		<WixVariable Id="WixUIBannerBmp" Value="connect2m-banner.bmp" />
 
 		<ui:WixUI Id="UI_MyInstallDialog" InstallDirectory="INSTALLFOLDER_INNER" />
 		<UIRef Id="WixUI_ErrorProgressText" />

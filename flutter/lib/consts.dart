@@ -5,6 +5,9 @@ import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 
 // connect2m branding. Copyright © 2026 Abdallah Zreik.
+// connect2m is a lean remote-support tool: no camera, terminal, voice call,
+// recording or TCP tunneling in the technician's menus.
+const bool kConnect2mLean = true;
 const String kConnect2mSourceUrl = '__CONNECT2M_SOURCE_URL__';
 const String kConnect2mCopyright =
     'connect2m Copyright © 2026 Abdallah Zreik';
