@@ -9,7 +9,7 @@
 	<Fragment>
 		<Property Id="C2M_SERVER" Secure="yes" />
 		<Property Id="C2M_KEY" Secure="yes" />
-		<Property Id="C2M_PASSWORD" Secure="yes" />
+		<Property Id="C2M_PASSWORD" Secure="yes" Hidden="yes" />
 		<Property Id="C2M_API" Secure="yes" />
 
 		<DirectoryRef Id="INSTALLFOLDER_INNER">
