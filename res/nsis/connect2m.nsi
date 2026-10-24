@@ -182,6 +182,20 @@ Section "!$(SecApp)" SEC_APP
   RMDir /r "$INSTDIR\data"
   File /r "${DIST_DIR}\*.*"
 
+  ; Optional overrides of the baked-in server settings:
+  ;   connect2m-Setup.exe /SERVER=10.0.0.5 /KEY=abc...   (both accept /S too)
+  ${GetParameters} $R8
+  ClearErrors
+  ${GetOptions} $R8 "/SERVER=" $R9
+  ${IfNot} ${Errors}
+    WriteINIStr "$INSTDIR\connect2m.ini" "connect2m" "server" "$R9"
+  ${EndIf}
+  ClearErrors
+  ${GetOptions} $R8 "/KEY=" $R9
+  ${IfNot} ${Errors}
+    WriteINIStr "$INSTDIR\connect2m.ini" "connect2m" "key" "$R9"
+  ${EndIf}
+
   WriteUninstaller "$INSTDIR\Uninstall ${APP_NAME}.exe"
 
   ; Add/Remove Programs entry. The app reads InstallLocation from this key to

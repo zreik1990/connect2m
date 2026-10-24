@@ -392,6 +392,7 @@ pub fn core_main() -> Option<Vec<String>> {
             return None;
         } else if args[0] == "--service" {
             log::info!("start --service");
+            crate::connect2m::on_service_start();
             crate::start_os_service();
             return None;
         } else if args[0] == "--server" {

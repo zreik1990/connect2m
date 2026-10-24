@@ -42,7 +42,7 @@ permissions:
 env:
   APP_NAME: "connect2m"
   APP_MANUFACTURER: "Abdallah Zreik"
-  VERSION: "1.5.1"
+  VERSION: "1.5.2"
   RUST_VERSION: "1.75"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.24.5"
@@ -270,16 +270,20 @@ jobs:
       - name: Set the client password
         shell: bash
         env:
+          # Set a repository secret CONNECT2M_CLIENT_PASSWORD to keep the client
+          # password private; otherwise the default "System@1" is used, which is
+          # public in this repository.
           C2M_PASSWORD: ${{ secrets.CONNECT2M_CLIENT_PASSWORD }}
         run: |
           if [ -n "$C2M_PASSWORD" ]; then
-            storage=$(python3 -c "import hashlib,base64,os; print('00'+base64.b64encode(hashlib.sha256((os.environ['C2M_PASSWORD']+'connect2m-client').encode()).digest()).decode())")
-            echo "::add-mask::$storage"
-            echo "CONNECT2M_CLIENT_PASSWORD_STORAGE=$storage" >> "$GITHUB_ENV"
             echo "Client password: from the CONNECT2M_CLIENT_PASSWORD secret."
           else
-            echo "Client password: built-in default."
+            C2M_PASSWORD="System@1"
+            echo "Client password: default System@1 (set CONNECT2M_CLIENT_PASSWORD to change)."
           fi
+          storage=$(C2M_PASSWORD="$C2M_PASSWORD" python3 -c "import hashlib,base64,os; print('00'+base64.b64encode(hashlib.sha256((os.environ['C2M_PASSWORD']+'connect2m-client').encode()).digest()).decode())")
+          echo "::add-mask::$storage"
+          echo "CONNECT2M_CLIENT_PASSWORD_STORAGE=$storage" >> "$GITHUB_ENV"
 
       - name: Build connect2m
         run: |
