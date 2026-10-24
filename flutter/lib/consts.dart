@@ -14,6 +14,18 @@ const String kConnect2mCopyright =
 const String kConnect2mUpstreamNotice =
     'Based on RustDesk, Copyright © Purslane Tech Pte. Ltd. and contributors. Licensed under AGPL-3.0.';
 
+// Licensing (Lemon Squeezy). Filled in at build time. When the store and
+// product are left blank, licensing is off and the app is free to run.
+const String kLicenseStoreId = '__CONNECT2M_LS_STORE_ID__';
+const String kLicenseProductId = '__CONNECT2M_LS_PRODUCT_ID__';
+const String kLicenseBuyUrl = '__CONNECT2M_BUY_URL__';
+
+bool get kLicensingEnabled =>
+    !kLicenseStoreId.startsWith('__') &&
+    kLicenseStoreId.isNotEmpty &&
+    !kLicenseProductId.startsWith('__') &&
+    kLicenseProductId.isNotEmpty;
+
 const int kMaxVirtualDisplayCount = 4;
 const int kAllVirtualDisplay = -1;
 

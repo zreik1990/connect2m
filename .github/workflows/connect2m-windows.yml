@@ -28,6 +28,18 @@ on:
         description: "Sign-in address; empty = http://<server>:21114 (use https://<domain> for Microsoft/Google sign-in)"
         type: string
         default: ""
+      license_store_id:
+        description: "Lemon Squeezy store id to require a license (empty = free, no license)"
+        type: string
+        default: ""
+      license_product_id:
+        description: "Lemon Squeezy product id (required if store id is set)"
+        type: string
+        default: ""
+      buy_url:
+        description: "Checkout URL shown on the 'Activate' screen (optional)"
+        type: string
+        default: ""
       publish-release:
         description: "Publish a GitHub Release (tag v<VERSION>) with the files"
         type: boolean
@@ -42,7 +54,7 @@ permissions:
 env:
   APP_NAME: "connect2m"
   APP_MANUFACTURER: "Abdallah Zreik"
-  VERSION: "1.5.2"
+  VERSION: "1.5.3"
   RUST_VERSION: "1.75"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.24.5"
@@ -126,6 +138,7 @@ jobs:
           flutter analyze --no-fatal-infos --no-fatal-warnings \
             lib/consts.dart \
             lib/desktop/widgets/connect2m_home_parts.dart \
+            lib/desktop/widgets/connect2m_license.dart \
             lib/desktop/pages/desktop_home_page.dart \
             lib/desktop/pages/desktop_setting_page.dart \
             lib/desktop/pages/connection_page.dart \
@@ -269,6 +282,21 @@ jobs:
           url="${{ github.server_url }}/${{ github.repository }}"
           sed -i "s#__CONNECT2M_SOURCE_URL__#${url}#g" flutter/lib/consts.dart res/msi/Package/License.rtf res/nsis/connect2m.nsi res/nsis/license.txt
           grep -n "kConnect2mSourceUrl =" flutter/lib/consts.dart
+
+      - name: Set licensing
+        shell: bash
+        env:
+          STORE: ${{ inputs.license_store_id }}
+          PRODUCT: ${{ inputs.license_product_id }}
+          BUY: ${{ inputs.buy_url }}
+        run: |
+          sed -i "s#__CONNECT2M_LS_STORE_ID__#${STORE}#g; s#__CONNECT2M_LS_PRODUCT_ID__#${PRODUCT}#g; s#__CONNECT2M_BUY_URL__#${BUY}#g" flutter/lib/consts.dart
+          if [ -n "$STORE" ] && [ -n "$PRODUCT" ]; then
+            echo "Licensing: ON (store $STORE, product $PRODUCT)."
+          else
+            echo "Licensing: OFF (no store/product; app runs free)."
+          fi
+          grep -n "kLicenseStoreId =\|kLicenseProductId =" flutter/lib/consts.dart
 
       - name: Set the client password
         shell: bash

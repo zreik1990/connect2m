@@ -240,8 +240,11 @@ fn overwrite_settings(s: &Settings) -> Map<String, Value> {
 }
 
 fn hard_settings(s: &Settings) -> Vec<(&'static str, String)> {
+    // Both editions open straight to the app with no sign-in: the account and
+    // address-book panels are off. Recent and favourite clients still work,
+    // stored locally.
     if !s.client {
-        return vec![];
+        return vec![("disable-account", "Y".to_owned())];
     }
     let mut v = vec![
         ("conn-type", "incoming".to_owned()),
