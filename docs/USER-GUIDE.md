@@ -108,17 +108,12 @@ Group Policy, PDQ, etc.):
 ```
 msiexec /i connect2m-Client.msi /qn
 ```
-Options you can add:
-- Different password for this batch: `C2M_PASSWORD=YourPassword`
-- Different server/key: `C2M_SERVER=10.0.0.5 C2M_KEY=abc...`
-
-Example:
-```
-msiexec /i connect2m-Client.msi C2M_PASSWORD=Spring#2026 /qn
-```
 
 The client screen shows only the **ID** (the PC's name) and a hidden password.
-The password is set by you and **cannot be changed on the client PC**.
+The password, server and key are built into the installer (section 2) and
+**cannot be changed on the client PC**. To use a different password for a set
+of PCs, build a separate client with the `CONNECT2M_CLIENT_PASSWORD` secret set
+to that password, then deploy that MSI.
 
 ---
 
@@ -197,7 +192,7 @@ buyers may modify and share it. See the project README for details.
 | "Key mismatch" when connecting | The app's key doesn't match the server. Rebuild the apps with the current server key, or reinstall the server without `-RequireKey`. |
 | Can't sign in with Microsoft/Google | Sign-in needs HTTPS on a real domain and internet access at that moment. See section 6. |
 | Windows SmartScreen warning | Expected until the app is code-signed. Click **More info → Run anyway**. |
-| Wrong password on client | The password is set at build time (default `System@1`) or at install with `C2M_PASSWORD=`. Reinstall the client to change it. |
+| Wrong password on client | The password is set at build time (default `System@1`, or the `CONNECT2M_CLIENT_PASSWORD` secret). Build and reinstall the client to change it. |
 | Server logs | `C:\connect2m-server\logs\` (hbbs.log, hbbr.log, api.log). |
 
 ---
