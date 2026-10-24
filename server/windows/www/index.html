@@ -20,10 +20,11 @@
          font: 15px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif; }
   .hero { background: linear-gradient(120deg, #0A2FB8, #1463F3 50%, #12B3A2);
           color: #fff; padding: 40px 16px 72px; text-align: center; }
-  .hero img { height: 54px; filter: brightness(0) invert(1); }
+  .hero img { height: 54px; max-width: 100%; }
   .hero p { margin: 12px auto 0; max-width: 560px; opacity: .9; }
   main { max-width: 920px; margin: -44px auto 40px; padding: 0 16px;
-         display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+         display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 680px) { main { grid-template-columns: 1fr; } }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
           padding: 22px; box-shadow: 0 8px 24px rgba(11, 37, 69, .08); }
   .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em;
